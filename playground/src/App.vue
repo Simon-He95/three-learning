@@ -7,12 +7,23 @@ onMounted(() => {
     y: 0,
   }
   SThree('#main', {
-    createMesh(c, animationArray) {
-      const group = c('G')
-      const cube1 = c('Mesh', c('BG', 1, 1, 1), c('MBM', { color: '#ff0000' }))
-      group.add(cube1)
-      animationArray.push(cube1)
-      return [group]
+    createMesh(c, animationArray, track) {
+      const geometry = c('bg', 1, 1, 1)
+      const parameters = {
+        color: 0xFFFFFF,
+        spin() {
+          console.log('spin')
+        },
+      }
+      const material = c('mbm', parameters)
+      const mesh = c('m', geometry, material)
+      track(mesh.position, 'y').min(-3).max(3).step(0.01).name('myY')
+      track(mesh, 'visible')
+      track(material, 'wireframe')
+      track('color', material, parameters)
+      track(parameters, 'spin')
+      console.log()
+      return [mesh]
     },
     createCamera(c, meshes) {
       const camera = c('PC')
@@ -20,14 +31,11 @@ onMounted(() => {
       return camera
     },
     middleware({ c, meshes, camera, scene, OrbitControls, dom }) {
-      // Axes helper
-      // const axesHelper = new THREE.AxesHelper();
-      // scene.add(axesHelper);
       const controls = new OrbitControls(camera, dom)
       controls.enableDamping = true
       return controls
     },
-    animate({ THREE, meshes, camera, elapsedTime, params }) {
+    animate({ c, meshes, camera, elapsedTime, params }) {
       // console.log(params);
       // meshes.forEach((mesh) => {
       //   mesh.rotation.y = time * Math.PI;
@@ -36,6 +44,7 @@ onMounted(() => {
       // meshes[0].rotation.y += 0.01;
       params.update()
     },
+    debug: true,
   })
 })
 </script>
