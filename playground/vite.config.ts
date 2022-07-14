@@ -43,7 +43,9 @@ export default defineConfig({
     // see unocss.config.ts for config
     Unocss(),
   ],
-
+  optimizeDeps: {
+    exclude: ['three/examples/jsm/controls/OrbitControls', 'three'],
+  },
   // https://github.com/vitest-dev/vitest
   test: {
     environment: 'jsdom',
