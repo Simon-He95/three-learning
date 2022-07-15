@@ -116,6 +116,7 @@ interface FnNameMap {
   lp: 'LineLoop'
   ls: 'LineSegments'
 }
+type ShadowType = 'BasicShadowMap' | 'PCFShadowMap' | 'PCFSoftShadowMap' | 'VSMShadowMap'
 interface SThreeOptions extends Record<string, any> {
   createMesh: (options: {
     cf?: (url: string, text: string, options: TextGeometryParameters) => Promise<TextGeometry>
@@ -133,6 +134,7 @@ interface SThreeOptions extends Record<string, any> {
   mouseup?: (e: Event) => void
   debug?: boolean
   alias?: Record<string, string>
+  shadowType?: ShadowType
 }
 
 export function sThree(container: HTMLElement | string, options: SThreeOptions) {
@@ -144,7 +146,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
   const scene = new THREE.Scene() as Object3D
   const animationArray: Mesh[] = []
   const cacheLoader = new Map()
-  const { createCamera, createMesh, animate, mousemove, mousedown, mouseup, debug, alias } = options
+  const { createCamera, createMesh, animate, mousemove, mousedown, mouseup, debug, alias, shadowType } = options
   let gui: dat.GUI
   if (debug)
     gui = new dat.GUI()
@@ -288,6 +290,10 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
   const camera = createCamera?.(c, animationArray, scene)
   if (!camera)
     throw new Error('camera is not created')
+  if (shadowType) {
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE[shadowType]
+  }
   const dom = renderer.domElement
   const animationOptions = {
     params: options.middleware?.({ c, scene, OrbitControls: Orbit as unknown as OrbitControls, camera, dom, animationArray }),
@@ -296,12 +302,13 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     scene,
     camera,
     animationArray,
-    elapsedTime: new THREE.Clock().getElapsedTime(),
   }
-  if (animate)
-    animationFrameWrapper((time: number) => renderer.render(scene, animate(Object.assign(animationOptions, { timestamp: time })) || camera), 0)
-  else
+  if (animate) {
+    const clock = new THREE.Clock()
+    animationFrameWrapper((time: number) => renderer.render(scene, animate(Object.assign(animationOptions, { elapsedTime: clock.getElapsedTime(), timestamp: time })) || camera), 0)
+  } else
     renderer.render(scene, camera);
+
   (container as HTMLElement).appendChild(dom)
 
   dragEvent(dom, {
