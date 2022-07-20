@@ -49,7 +49,7 @@ interface FnNameMap {
   tkg: 'TorusKnotGeometry'
   tubeg: 'TubeGeometry'
   wfg: 'WireframeGeometry'
-  cg: "CircleGeometry",
+  cg: 'CircleGeometry'
   ac: 'ArcCurve'
   crc3: 'CatmullRomCurve3'
   cbc: 'CubicBezierCurve'
@@ -104,28 +104,28 @@ interface FnNameMap {
   mphysicalm: 'MeshPhysicalMaterial'
   msm: 'MeshStandardMaterial'
   mtm: 'MeshToonMaterial'
-  p: "Points"
+  p: 'Points'
   pm: 'PointsMaterial'
   rsm: 'RawShaderMaterial'
   sm: 'ShaderMaterial'
   shadowm: 'ShadowMaterial'
   spritem: 'SpriteMaterial'
   line: 'Line'
-  lp: 'LineLoop',
-  ls: 'LineSegments',
-  al: 'AmbientLight',
-  alp: 'AmbientLightProbe',
-  dl: 'DirectionalLight',
-  hl: 'HemisphereLight',
-  hlp: 'HemisphereLightProbe',
-  pl: 'PointLight',
-  ral: 'RectAreaLight',
-  sl: 'SpotLight',
-  pls: 'PointLightShadow',
-  dls: 'DirectionalLightShadow',
-  sls: 'SpotLightShadow',
-  lph: 'LightProbeHelper',
-  ralh: 'RectAreaLightHelper',
+  lp: 'LineLoop'
+  ls: 'LineSegments'
+  al: 'AmbientLight'
+  alp: 'AmbientLightProbe'
+  dl: 'DirectionalLight'
+  hl: 'HemisphereLight'
+  hlp: 'HemisphereLightProbe'
+  pl: 'PointLight'
+  ral: 'RectAreaLight'
+  sl: 'SpotLight'
+  pls: 'PointLightShadow'
+  dls: 'DirectionalLightShadow'
+  sls: 'SpotLightShadow'
+  lph: 'LightProbeHelper'
+  ralh: 'RectAreaLightHelper'
   f: 'Fog'
   aa: 'AnimationAction'
   anc: 'AnimationClip'
@@ -203,7 +203,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     tkg: 'TorusKnotGeometry',
     tubeg: 'TubeGeometry',
     wfg: 'WireframeGeometry',
-    cg: "CircleGeometry",
+    cg: 'CircleGeometry',
     ac: 'ArcCurve',
     crc3: 'CatmullRomCurve3',
     cbc: 'CubicBezierCurve',
@@ -258,7 +258,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     mphysicalm: 'MeshPhysicalMaterial',
     msm: 'MeshStandardMaterial',
     mtm: 'MeshToonMaterial',
-    p: "Points",
+    p: 'Points',
     pm: 'PointsMaterial',
     rsm: 'RawShaderMaterial',
     sm: 'ShaderMaterial',
@@ -287,7 +287,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     aog: 'AnimationObjectGroup',
     au: 'AnimationUtils',
     a: 'Animation',
-    anl: 'AnimationLoader'
+    anl: 'AnimationLoader',
   }
   const loaderArray: string[] = [
     'animationl',
@@ -334,16 +334,17 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     scene,
     renderer,
     dom,
-    setRendererAttributes
+    setRendererAttributes,
   }
 
   function update() {
-    if (hasMounted) return
+    if (hasMounted)
+      return
     if (isStr(container))
       container = document.querySelector(container as string) as HTMLElement || container
-    if (!isMounted && isStr(container)) {
+    if (!isMounted && isStr(container))
       return isMounted = true
-    } else if (!container)
+    else if (!container)
       throw new Error(`${container} container is not found`)
 
     const { createCamera, createMesh, animate, mousemove, mousedown, mouseup, debug, alias, shadowType } = options
@@ -351,7 +352,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
       gui = new dat.GUI()
     if (alias) {
       Object.assign(fnNameMap, alias)
-      Object.keys(alias).forEach(key => {
+      Object.keys(alias).forEach((key) => {
         if (!alias[key].includes('Loader') || loaderArray.includes(key))
           return
         loaderArray.push(key)
@@ -384,8 +385,8 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     if (animate) {
       const clock = new THREE.Clock()
       animationFrameWrapper((time: number) => renderer.render(scene, animate(Object.assign(animationOptions, { elapsedTime: clock.getElapsedTime(), timestamp: time })) || camera), 0)
-    } else
-      animationFrameWrapper(() => renderer.render(scene, camera), 0, true);
+    }
+    else { animationFrameWrapper(() => renderer.render(scene, camera), 0, true) }
 
     (container as HTMLElement).appendChild(dom)
     hasMounted = true
@@ -444,7 +445,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     }
     return gui.add(...args)
   }
-  function setUV(target: Mesh, size: number = 2) {
+  function setUV(target: Mesh, size = 2) {
     target.geometry.setAttribute('uv2', c('ba', target.geometry.attributes.uv.array, size))
   }
   function glTFLoader(url: string, dracoLoader?: DRACOLoader, callback?: (gltf: GLTFLoader) => void): Promise<GLTFLoader> {
@@ -457,8 +458,8 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
       if (!gltfLoaderMap.get('gltf')) {
         gltfLoader = new GLTFLoader()
         gltfLoaderMap.set('gltf', gltfLoader)
-      } else
-        gltfLoader = gltfLoaderMap.get('gltf')
+      }
+      else { gltfLoader = gltfLoaderMap.get('gltf') }
       if (dracoLoader)
         gltfLoader.setDRACOLoader(dracoLoader)
       gltfLoader.load(url, (gltf: GLTFLoader) => {
@@ -472,8 +473,8 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     if (!dracoLoaderMap.get('draco')) {
       dracoLoader = new DRACOLoader()
       dracoLoaderMap.set('draco', dracoLoader)
-    } else
-      dracoLoader = dracoLoaderMap.get('draco')
+    }
+    else { dracoLoader = dracoLoaderMap.get('draco') }
     dracoLoader.setDecoderPath(decoderPath)
     return dracoLoader
   }

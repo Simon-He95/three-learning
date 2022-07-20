@@ -13,11 +13,12 @@ function exportPlugin(config: string) {
   return {
     name: 'export-plugin',
     transform(src: any, id: string) {
-      if (id.endsWith(config))
+      if (id.endsWith(config)) {
         return {
           code: `export default ${JSON.stringify(src)}`,
-          map: null
+          map: null,
         }
+      }
     },
   }
 }
