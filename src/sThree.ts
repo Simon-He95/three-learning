@@ -1,34 +1,30 @@
 import * as THREE from 'three'
-import { OrbitControls as Orbit } from 'three/examples/jsm/controls/OrbitControls'
-import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import type { Mesh, Object3D, PerspectiveCamera } from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
+import type { Mesh, Object3D, PerspectiveCamera, WebGLRenderer } from 'three'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import type { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
-import { addEventListener, animationFrameWrapper, dragEvent, isStr } from 'simon-js-tool'
+import { addEventListener, animationFrameWrapper, dragEvent, isFn, isStr } from 'simon-js-tool'
 import * as dat from 'dat.gui'
-type T = typeof THREE
 
+type T = typeof THREE
+type K = keyof WebGLRenderer
 interface AnimateOptions {
-  c: (fnName: keyof T, ...args: any[]) => any
-  animationArray: Mesh[]
   camera: PerspectiveCamera
   elapsedTime: number
-  scene: Object3D
-  dom: HTMLCanvasElement
   timestamp: number
 }
 interface MiddlewareOptions {
-  c: (fnName: keyof T, ...args: any[]) => any
-  animationArray: Mesh[]
-  scene: Object3D
   OrbitControls: OrbitControls
-  dom: HTMLCanvasElement
   camera: PerspectiveCamera
 }
 interface FnNameMap {
   cc: 'CubeCamera'
   v3: 'Vector3'
+  v2: 'Vector2'
+  v4: 'Vector4'
   oc: 'OrthographicCamera'
   pc: 'PerspectiveCamera'
   sc: 'StereoCamera'
@@ -44,7 +40,7 @@ interface FnNameMap {
   ig: 'IcosahedronGeometry'
   lg: 'LatheGeometry'
   og: 'OctahedronGeometry'
-  planeg: 'PlaneGeometry'
+  pg: 'PlaneGeometry'
   polyg: 'PolyhedronGeometry'
   rg: 'RingGeometry'
   sg: 'SphereGeometry'
@@ -53,6 +49,7 @@ interface FnNameMap {
   tkg: 'TorusKnotGeometry'
   tubeg: 'TubeGeometry'
   wfg: 'WireframeGeometry'
+  cg: "CircleGeometry",
   ac: 'ArcCurve'
   crc3: 'CatmullRomCurve3'
   cbc: 'CubicBezierCurve'
@@ -81,7 +78,7 @@ interface FnNameMap {
   bgl: 'BufferGeometryLoader'
   c: 'Cache'
   compressedtl: 'CompressedTextureLoader'
-  cubetl: 'CubeTextureLoader'
+  ctl: 'CubeTextureLoader'
   dtl: 'DataTextureLoader'
   filel: 'FileLoader'
   fl: 'FontLoader'
@@ -103,31 +100,46 @@ interface FnNameMap {
   mlm: 'MeshLambertMaterial'
   mmm: 'MeshMatcapMaterial'
   mnm: 'MeshNormalMaterial'
-  mpongm: 'MeshPhongMaterial'
+  mpm: 'MeshPhongMaterial'
   mphysicalm: 'MeshPhysicalMaterial'
   msm: 'MeshStandardMaterial'
   mtm: 'MeshToonMaterial'
+  p: "Points"
   pm: 'PointsMaterial'
-  rm: 'RawShaderMaterial'
-  shaderm: 'ShaderMaterial'
+  rsm: 'RawShaderMaterial'
+  sm: 'ShaderMaterial'
   shadowm: 'ShadowMaterial'
   spritem: 'SpriteMaterial'
   line: 'Line'
-  lp: 'LineLoop'
-  ls: 'LineSegments'
+  lp: 'LineLoop',
+  ls: 'LineSegments',
+  al: 'AmbientLight',
+  alp: 'AmbientLightProbe',
+  dl: 'DirectionalLight',
+  hl: 'HemisphereLight',
+  hlp: 'HemisphereLightProbe',
+  pl: 'PointLight',
+  ral: 'RectAreaLight',
+  sl: 'SpotLight',
+  pls: 'PointLightShadow',
+  dls: 'DirectionalLightShadow',
+  sls: 'SpotLightShadow',
+  lph: 'LightProbeHelper',
+  ralh: 'RectAreaLightHelper',
+  f: 'Fog'
+  aa: 'AnimationAction'
+  anc: 'AnimationClip'
+  am: 'AnimationMixer'
+  aog: 'AnimationObjectGroup'
+  au: 'AnimationUtils'
+  a: 'Animation'
+  anl: 'AnimationLoader'
 }
 type ShadowType = 'BasicShadowMap' | 'PCFShadowMap' | 'PCFSoftShadowMap' | 'VSMShadowMap'
 interface SThreeOptions extends Record<string, any> {
-  createMesh: (options: {
-    cf?: (url: string, text: string, options: TextGeometryParameters) => Promise<TextGeometry>
-    animationArray?: Mesh[]
-    track?: (...args: [target: Object, propName: string, min?: number, max?: number, step?: number]) => dat.GUIController
-    c: (fnName: keyof FnNameMap | keyof T, ...args: any[]) => any
-    scene?: Object3D
-    THREE?: T
-  }) => void
-  createCamera: (c: (fnName: keyof FnNameMap | keyof T, ...args: any[]) => any, meshes: Mesh[], scene: Object3D) => PerspectiveCamera
-  animate?: (animationOptions: AnimateOptions) => void | THREE.PerspectiveCamera
+  createMesh: () => void
+  createCamera: () => PerspectiveCamera
+  animate?: (animationOptions: AnimateOptions) => void | PerspectiveCamera
   middleware?: (middlewareOptions: MiddlewareOptions) => any
   mousemove?: (e: Event) => void
   mousedown?: (e: Event) => void
@@ -137,21 +149,35 @@ interface SThreeOptions extends Record<string, any> {
   shadowType?: ShadowType
 }
 
-export function sThree(container: HTMLElement | string, options: SThreeOptions) {
-  if (isStr(container))
-    container = document.querySelector(container as string) as HTMLElement || container
-  if (isStr(container))
-    throw new Error(`${container} container is not found`)
-  const renderer = new THREE.WebGLRenderer()
-  const scene = new THREE.Scene() as Object3D
-  const animationArray: Mesh[] = []
-  const cacheLoader = new Map()
-  const { createCamera, createMesh, animate, mousemove, mousedown, mouseup, debug, alias, shadowType } = options
+interface Scene extends Object3D {
+  _add?: (...args: any[]) => void
+}
+
+interface ReturnType {
+  c: (fnName: keyof FnNameMap | keyof T, ...args: any[]) => any
+  cf: (url: string, text: string, options: TextGeometryParameters) => Promise<TextGeometry>
+  track: (...args: [target: Object, propName: string, min?: number, max?: number, step?: number]) => dat.GUIController
+  setUV: (target: Mesh, size?: number) => void
+  glTFLoader: (url: string, dracoLoader?: DRACOLoader, callback?: (gltf: GLTFLoader) => void) => Promise<GLTFLoader>
+  draCOLoader: (decoderPath: string) => DRACOLoader
+  animationArray: Mesh[]
+  THREE: T
+  scene: Scene
+  renderer: WebGLRenderer
+  dom: HTMLCanvasElement
+  setRendererAttributes: (options: Record<K, any>) => void
+}
+export function sThree(container: HTMLElement | string, options: SThreeOptions): ReturnType {
+  let isMounted = false
+  let hasMounted = false
   let gui: dat.GUI
-  if (debug)
-    gui = new dat.GUI()
-  const fnNameMap = Object.assign({
+  const scene: Scene = new THREE.Scene()
+  const renderer = new THREE.WebGLRenderer()
+  const dom = renderer.domElement
+  const fnNameMap: FnNameMap = {
     v3: 'Vector3',
+    v2: 'Vector2',
+    v4: 'Vector4',
     cc: 'CubeCamera',
     oc: 'OrthographicCamera',
     pc: 'PerspectiveCamera',
@@ -168,7 +194,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     ig: 'IcosahedronGeometry',
     lg: 'LatheGeometry',
     og: 'OctahedronGeometry',
-    planeg: 'PlaneGeometry',
+    pg: 'PlaneGeometry',
     polyg: 'PolyhedronGeometry',
     rg: 'RingGeometry',
     sg: 'SphereGeometry',
@@ -177,6 +203,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     tkg: 'TorusKnotGeometry',
     tubeg: 'TubeGeometry',
     wfg: 'WireframeGeometry',
+    cg: "CircleGeometry",
     ac: 'ArcCurve',
     crc3: 'CatmullRomCurve3',
     cbc: 'CubicBezierCurve',
@@ -205,7 +232,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     bgl: 'BufferGeometryLoader',
     c: 'Cache',
     compressedtl: 'CompressedTextureLoader',
-    cubetl: 'CubeTextureLoader',
+    ctl: 'CubeTextureLoader',
     dtl: 'DataTextureLoader',
     filel: 'FileLoader',
     fl: 'FontLoader',
@@ -227,13 +254,14 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     mlm: 'MeshLambertMaterial',
     mmm: 'MeshMatcapMaterial',
     mnm: 'MeshNormalMaterial',
-    mphongm: 'MeshPhongMaterial',
+    mpm: 'MeshPhongMaterial',
     mphysicalm: 'MeshPhysicalMaterial',
     msm: 'MeshStandardMaterial',
     mtm: 'MeshToonMaterial',
+    p: "Points",
     pm: 'PointsMaterial',
-    rm: 'RawShaderMaterial',
-    shaderm: 'ShaderMaterial',
+    rsm: 'RawShaderMaterial',
+    sm: 'ShaderMaterial',
     shadowm: 'ShadowMaterial',
     spritem: 'SpriteMaterial',
     line: 'Line',
@@ -252,7 +280,15 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     sls: 'SpotLightShadow',
     lph: 'LightProbeHelper',
     ralh: 'RectAreaLightHelper',
-  }, alias) as unknown as FnNameMap
+    f: 'Fog',
+    aa: 'AnimationAction',
+    anc: 'AnimationClip',
+    am: 'AnimationMixer',
+    aog: 'AnimationObjectGroup',
+    au: 'AnimationUtils',
+    a: 'Animation',
+    anl: 'AnimationLoader'
+  }
   const loaderArray: string[] = [
     'animationl',
     'AnimationLoader',
@@ -262,7 +298,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     'BufferGeometryLoader',
     'compressedtl',
     'CompressedTextureLoader',
-    'cubetl',
+    'ctl',
     'CubeTextureLoader',
     'dtl',
     'DataTextureLoader',
@@ -279,62 +315,106 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
     'tl',
     'TextureLoader',
   ]
-  createMesh?.({
-    c: c as unknown as any,
-    animationArray,
-    THREE,
-    track,
-    cf,
-    scene,
-  })
-  const camera = createCamera?.(c, animationArray, scene)
-  if (!camera)
-    throw new Error('camera is not created')
-  if (shadowType) {
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE[shadowType]
-  }
-  const dom = renderer.domElement
-  const animationOptions = {
-    params: options.middleware?.({ c, scene, OrbitControls: Orbit as unknown as OrbitControls, camera, dom, animationArray }),
+  const cacheLoader = new Map()
+  const gltfLoaderMap = new Map()
+  const dracoLoaderMap = new Map()
+  const animationArray: Mesh[] = []
+  update()
+  addEventListener(document, 'DOMContentLoaded', update)
+
+  return {
     c,
-    dom,
-    scene,
-    camera,
+    cf,
+    track,
+    setUV,
     animationArray,
+    glTFLoader,
+    draCOLoader,
+    THREE,
+    scene,
+    renderer,
+    dom,
+    setRendererAttributes
   }
-  if (animate) {
-    const clock = new THREE.Clock()
-    animationFrameWrapper((time: number) => renderer.render(scene, animate(Object.assign(animationOptions, { elapsedTime: clock.getElapsedTime(), timestamp: time })) || camera), 0)
-  } else
-    renderer.render(scene, camera);
 
-  (container as HTMLElement).appendChild(dom)
+  function update() {
+    if (hasMounted) return
+    if (isStr(container))
+      container = document.querySelector(container as string) as HTMLElement || container
+    if (!isMounted && isStr(container)) {
+      return isMounted = true
+    } else if (!container)
+      throw new Error(`${container} container is not found`)
 
-  dragEvent(dom, {
-    dragStart: mousedown,
-    dragMove: mousemove,
-    dragEnd: mouseup,
-  })
+    const { createCamera, createMesh, animate, mousemove, mousedown, mouseup, debug, alias, shadowType } = options
+    if (debug && !gui)
+      gui = new dat.GUI()
+    if (alias) {
+      Object.assign(fnNameMap, alias)
+      Object.keys(alias).forEach(key => {
+        if (!alias[key].includes('Loader') || loaderArray.includes(key))
+          return
+        loaderArray.push(key)
+      })
+    }
+    const sceneAdd = scene.add
+    scene._add = function (...args: any[]) {
+      sceneAdd.apply(scene, args)
+      const result = args.map(arg => () => unmount(arg))
+      return result.length === 1 ? result[0] : result
+      function unmount(arg: Mesh) {
+        const { material, geometry } = arg;
+        (material as any).dispose()
+        geometry.dispose()
+        scene.remove(arg)
+      }
+    }
+    createMesh?.()
+    const camera = createCamera?.()
+    if (!camera)
+      throw new Error('camera is not created')
+    if (shadowType) {
+      renderer.shadowMap.enabled = true
+      renderer.shadowMap.type = THREE[shadowType]
+    }
+    const animationOptions = {
+      params: options.middleware?.({ OrbitControls: OrbitControls as unknown as OrbitControls, camera }),
+      camera,
+    }
+    if (animate) {
+      const clock = new THREE.Clock()
+      animationFrameWrapper((time: number) => renderer.render(scene, animate(Object.assign(animationOptions, { elapsedTime: clock.getElapsedTime(), timestamp: time })) || camera), 0)
+    } else
+      animationFrameWrapper(() => renderer.render(scene, camera), 0, true);
 
-  resize()
-  addEventListener(window, 'resize', resize)
+    (container as HTMLElement).appendChild(dom)
+    hasMounted = true
+    dragEvent(dom, {
+      dragStart: mousedown,
+      dragMove: mousemove,
+      dragEnd: mouseup,
+    })
+    resize()
+    addEventListener(window, 'resize', resize)
 
-  function resize() {
-    const width = (container as HTMLElement).offsetWidth
-    const height = (container as HTMLElement).offsetHeight
-    camera.aspect = Math.min(width / height, 2)
-    camera.updateProjectionMatrix()
-    renderer.setSize(width, height, false)
+    function resize() {
+      const width = (container as HTMLElement).offsetWidth
+      const height = (container as HTMLElement).offsetHeight
+      camera.aspect = Math.min(width / height, 2)
+      camera.updateProjectionMatrix()
+      renderer.setSize(width, height, false)
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    }
   }
   function c(fnName: keyof FnNameMap | keyof T, ...args: any[]): any {
     const lowName = fnName.toLowerCase() as keyof FnNameMap
     const fnNameMapKey = fnNameMap[lowName] as keyof T
     const _class = THREE[fnNameMapKey || fnName]
-    if (lowName)
-      console.log(`${lowName}: ${fnNameMapKey}`)
-    if (!_class)
-      throw new Error(`${fnName} is not found`)
+    if (!_class) {
+      throw new Error(`${fnName} is not found, maybe you want to use ${Object.keys(fnNameMap).filter(key => key.startsWith(fnName[0]) && key.endsWith(fnName.slice(-1))).reduce((result, key) => {
+        return result += `\n ${key} : ${(fnNameMap as any)[key]}`
+      }, '')} `)
+    }
     if (loaderArray.includes(lowName)) {
       if (cacheLoader.has(lowName))
         return cacheLoader.get(lowName).load(...args)
@@ -354,11 +434,52 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions) 
   function track(...args: [target: Object, propName: string, min?: number, max?: number, step?: number]): dat.GUIController {
     if (!gui)
       throw new Error('gui is not created, please use debug option')
+    const p = gui.domElement.parentNode!
+    if (p?.childNodes.length > 1)
+      p?.removeChild(p.childNodes[0])
     if (args[0] === 'color') {
-      return gui.addColor(args[2] as unknown as { color: string }, 'color').onChange(() => {
-        (args[1] as unknown as { color: any }).color.set((args[2] as unknown as { color: string }).color)
+      return gui.addColor(args[1] as unknown as Record<string, any>, args[2] as unknown as string).onChange(() => {
+        (args[1] as unknown as Record<string, any>)?.color?.set(args[1][args[2] as any])
       })
     }
     return gui.add(...args)
+  }
+  function setUV(target: Mesh, size: number = 2) {
+    target.geometry.setAttribute('uv2', c('ba', target.geometry.attributes.uv.array, size))
+  }
+  function glTFLoader(url: string, dracoLoader?: DRACOLoader, callback?: (gltf: GLTFLoader) => void): Promise<GLTFLoader> {
+    return new Promise((resolve) => {
+      if (isFn(dracoLoader)) {
+        callback = dracoLoader as unknown as (gltf: GLTFLoader) => void
+        dracoLoader = undefined
+      }
+      let gltfLoader
+      if (!gltfLoaderMap.get('gltf')) {
+        gltfLoader = new GLTFLoader()
+        gltfLoaderMap.set('gltf', gltfLoader)
+      } else
+        gltfLoader = gltfLoaderMap.get('gltf')
+      if (dracoLoader)
+        gltfLoader.setDRACOLoader(dracoLoader)
+      gltfLoader.load(url, (gltf: GLTFLoader) => {
+        resolve(gltf)
+        callback?.(gltf)
+      })
+    })
+  }
+  function draCOLoader(decoderPath: string): DRACOLoader {
+    let dracoLoader
+    if (!dracoLoaderMap.get('draco')) {
+      dracoLoader = new DRACOLoader()
+      dracoLoaderMap.set('draco', dracoLoader)
+    } else
+      dracoLoader = dracoLoaderMap.get('draco')
+    dracoLoader.setDecoderPath(decoderPath)
+    return dracoLoader
+  }
+  function setRendererAttributes(options: Record<K, any>) {
+    (Object.keys(options) as K[]).forEach((key: K) => {
+      (renderer as any)[key] = options[key]
+    })
   }
 }

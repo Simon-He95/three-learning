@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+/// <reference types="Three" />
 
 import path from 'path'
 import { defineConfig } from 'vite'
@@ -8,6 +9,19 @@ import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Unocss from 'unocss/vite'
 
+function exportPlugin(config: string) {
+  return {
+    name: 'export-plugin',
+    transform(src: any, id: string) {
+      if (id.endsWith(config))
+        return {
+          code: `export default ${JSON.stringify(src)}`,
+          map: null
+        }
+    },
+  }
+}
+
 export default defineConfig({
   base: './',
   resolve: {
@@ -16,6 +30,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    exportPlugin('glsl'),
     Vue({
       reactivityTransform: true,
     }),
