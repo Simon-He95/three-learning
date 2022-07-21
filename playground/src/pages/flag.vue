@@ -2,8 +2,8 @@
 // import { sThree } from "simon-js-tool";
 import * as CANNON from 'cannon-es'
 import { sThree } from '../../../src/sThree'
-import vertexShader from './vertex1.glsl'
-import fragmentShader from './fragment1.glsl'
+import vertexShader from './vertex.glsl'
+import fragmentShader from './fragment.glsl'
 // import * as sThree from "../../src/sThree.ts";
 let oldElapsedTime = 0
 let world
@@ -22,7 +22,7 @@ const {
   scene,
   dom,
   setRendererAttributes,
-} = sThree('#demo', {
+} = sThree('#flag', {
   createMesh() {
     // Update all materials
     const flagTexture = c('tl', '/public/china.png')
@@ -30,7 +30,20 @@ const {
     material = c('rsm', {
       vertexShader,
       fragmentShader,
-      side: THREE.DoubleSide,
+      uniforms: {
+        uFrequency: {
+          value: c('v2', 10, 5),
+        },
+        uTime: {
+          value: 0,
+        },
+        uColor: {
+          value: c('c', 'orange'),
+        },
+        uTexture: {
+          value: flagTexture,
+        },
+      },
     })
     const flag = c('m', geometry, material)
     flag.scale.y = 2 / 3
@@ -55,6 +68,7 @@ const {
   animate({ camera, elapsedTime, params, timestamp }) {
     const delta = elapsedTime - oldElapsedTime
     oldElapsedTime = elapsedTime
+    material.uniforms.uTime.value = elapsedTime
   },
   shadowType: 'PCFSoftShadowMap',
   debug: true,
@@ -76,5 +90,5 @@ function updateAllMaterials() {
 </script>
 
 <template>
-  <div id="demo" h-full />
+  <div id="flag" h-full />
 </template>

@@ -45,7 +45,7 @@ interface FnNameMap {
   rg: 'RingGeometry'
   sg: 'SphereGeometry'
   tetrag: 'TetrahedronGeometry'
-  torusg: 'TorusGeometry'
+  tg: 'TorusGeometry'
   tkg: 'TorusKnotGeometry'
   tubeg: 'TubeGeometry'
   wfg: 'WireframeGeometry'
@@ -61,7 +61,7 @@ interface FnNameMap {
   qbc3: 'QuadraticBezierCurve3'
   splinec: 'SplineCurve'
   arrowh: 'ArrowHelper'
-  axesh: 'AxesHelper'
+  ah: 'AxesHelper'
   bh: 'BoxHelper'
   b3h: 'Box3Helper'
   ch: 'CameraHelper'
@@ -76,7 +76,8 @@ interface FnNameMap {
   animationl: 'AnimationLoader'
   audiol: 'AudioLoader'
   bgl: 'BufferGeometryLoader'
-  c: 'Cache'
+  cache: 'Cache'
+  c: 'Color'
   compressedtl: 'CompressedTextureLoader'
   ctl: 'CubeTextureLoader'
   dtl: 'DataTextureLoader'
@@ -199,7 +200,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     rg: 'RingGeometry',
     sg: 'SphereGeometry',
     tetrag: 'TetrahedronGeometry',
-    torusg: 'TorusGeometry',
+    tg: 'TorusGeometry',
     tkg: 'TorusKnotGeometry',
     tubeg: 'TubeGeometry',
     wfg: 'WireframeGeometry',
@@ -215,7 +216,7 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     qbc3: 'QuadraticBezierCurve3',
     splinec: 'SplineCurve',
     arrowh: 'ArrowHelper',
-    axesh: 'AxesHelper',
+    ah: 'AxesHelper',
     bh: 'BoxHelper',
     b3h: 'Box3Helper',
     ch: 'CameraHelper',
@@ -230,7 +231,8 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     animationl: 'AnimationLoader',
     audiol: 'AudioLoader',
     bgl: 'BufferGeometryLoader',
-    c: 'Cache',
+    cache: 'Cache',
+    c: 'Color',
     compressedtl: 'CompressedTextureLoader',
     ctl: 'CubeTextureLoader',
     dtl: 'DataTextureLoader',
@@ -358,9 +360,8 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
         loaderArray.push(key)
       })
     }
-    const sceneAdd = scene.add
     scene._add = function (...args: any[]) {
-      sceneAdd.apply(scene, args)
+      scene.add(...args)
       const result = args.map(arg => () => unmount(arg))
       return result.length === 1 ? result[0] : result
       function unmount(arg: Mesh) {
@@ -411,11 +412,9 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     const lowName = fnName.toLowerCase() as keyof FnNameMap
     const fnNameMapKey = fnNameMap[lowName] as keyof T
     const _class = THREE[fnNameMapKey || fnName]
-    if (!_class) {
-      throw new Error(`${fnName} is not found, maybe you want to use ${Object.keys(fnNameMap).filter(key => key.startsWith(fnName[0]) && key.endsWith(fnName.slice(-1))).reduce((result, key) => {
-        return result += `\n ${key} : ${(fnNameMap as any)[key]}`
-      }, '')} `)
-    }
+    if (!_class)
+      throw new Error(`${fnName} is not found, maybe you want to use ${Object.keys(fnNameMap).filter(key => new RegExp(fnName.split('').reduce((result, key) => result += `${key}(\\w+)?`, '')).test(key)).reduce((result, key) => result += `\n ${key} : ${(fnNameMap as any)[key]}`, '')} `)
+
     if (loaderArray.includes(lowName)) {
       if (cacheLoader.has(lowName))
         return cacheLoader.get(lowName).load(...args)

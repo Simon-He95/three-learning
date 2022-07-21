@@ -33,8 +33,10 @@ const {
     let points
     let unmount
     const generateGalaxy = () => {
-      if (points)
+      if (points) {
         unmount()
+        animationArray.shift()
+      }
       geometry = c('bufferg')
       const positions = new Float32Array(params.count * 3)
       const colors = new Float32Array(params.count * 3)
@@ -70,7 +72,6 @@ const {
       }
       geometry.setAttribute('position', c('ba', positions, 3))
       geometry.setAttribute('color', c('ba', colors, 3))
-      console.log(geometry)
       // Material
       material = c('pm', {
         size: params.size,
