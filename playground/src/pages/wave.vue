@@ -23,7 +23,7 @@ const {
   scene,
   dom,
   setRendererAttributes,
-} = sThree('#demo', {
+} = sThree('#wave', {
   createMesh() {
     // Update all materials
     const waterGeometry = c('pg', 10, 10, 512, 512)
@@ -145,5 +145,5 @@ function updateAllMaterials() {
 </script>
 
 <template>
-  <div id="demo" h-full />
+  <div id="wave" h-full />
 </template>

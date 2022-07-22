@@ -438,9 +438,8 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     if (p?.childNodes.length > 1)
       p?.removeChild(p.childNodes[0])
     if (args[0] === 'color') {
-      return gui.addColor(args[1] as unknown as Record<string, any>, args[2] as unknown as string).onChange(() => {
-        (args[1] as unknown as Record<string, any>)?.color?.set(args[1][args[2] as any])
-      })
+      const target = args[1][args[2]!] as any
+      return gui.addColor(args[1] as unknown as Record<string, any>, args[2] as unknown as string).onChange(() => target?.set?.(args[1][args[2]!]))
     }
     return gui.add(...args)
   }
