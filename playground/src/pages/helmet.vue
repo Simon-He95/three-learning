@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// import { sThree } from "simon-js-tool";
+import { sThree } from '@simon_he/s-three'
 import * as CANNON from 'cannon-es'
-import { sThree } from '../../../src/sThree'
+// import { sThree } from "../../../src/sThree";
 // import * as sThree from "../../src/sThree.ts";
-
 let oldElapsedTime = 0
 let world
 let mixer
@@ -23,19 +22,18 @@ const {
 } = sThree('#helmet', {
   createMesh() {
     // Update all materials
-
     const environmentMap = c('ctl', [
-      '/public/px.png',
-      '/public/nx.png',
-      '/public/py.png',
-      '/public/ny.png',
-      '/public/pz.png',
-      '/public/nz.png',
+      '/px.png',
+      '/nx.png',
+      '/py.png',
+      '/ny.png',
+      '/pz.png',
+      '/nz.png',
     ])
     scene.background = environmentMap
     scene.environment = environmentMap
     // Models
-    glTFLoader('/public/FlightHelmet/glTF/FlightHelmet.gltf', (gltf) => {
+    glTFLoader('/FlightHelmet/glTF/FlightHelmet.json', (gltf) => {
       const group = gltf.scene
       group.scale.set(10, 10, 10)
       group.position.set(0, -4, 0)

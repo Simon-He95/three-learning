@@ -1,13 +1,13 @@
 <script setup lang="ts">
-// import { sThree } from "simon-js-tool";
+import { sThree } from '@simon_he/s-three'
 import * as CANNON from 'cannon-es'
-import { sThree } from '../../../src/sThree'
+// import { sThree } from '../../../src/sThree'
 // import * as sThree from "../../src/sThree.ts";
 
 let oldElapsedTime = 0
 let world
 
-const hitSound = new Audio('/public/hit.mp3')
+const hitSound = new Audio('/hit.mp3')
 const playHitSound = (collision) => {
   // if (collision.contact.getImpactVelocityAlongNormal() > 3) {
   //   hitSound.volume = Math.random();
@@ -171,7 +171,7 @@ const boxMaterial = c('msm', {
   roughness: 0.4,
 })
 
-const texture = c('tl', '/public/1.png')
+const texture = c('tl', '/1.png')
 
 const sphereGeometry = c('sg', 1, 20, 20)
 const sphereMaterial = c('msm', {

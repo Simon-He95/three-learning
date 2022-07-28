@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// import { sThree } from "simon-js-tool";
+import { sThree } from '@simon_he/s-three'
 import * as CANNON from 'cannon-es'
-import { sThree } from '../../../src/sThree'
+// import { sThree } from '../../../src/sThree'
 import vertexShader from './vertex.glsl'
 import fragmentShader from './fragment.glsl'
 // import * as sThree from "../../src/sThree.ts";
@@ -25,7 +25,7 @@ const {
 } = sThree('#flag', {
   createMesh() {
     // Update all materials
-    const flagTexture = c('tl', '/public/china.png')
+    const flagTexture = c('tl', '/china.png')
     const geometry = c('pg', 1, 1, 32, 32)
     material = c('rsm', {
       vertexShader,
@@ -71,9 +71,7 @@ const {
     material.uniforms.uTime.value = elapsedTime
   },
   shadowType: 'PCFSoftShadowMap',
-  debug: true,
 })
-
 function updateAllMaterials() {
   scene.traverse((child) => {
     if (

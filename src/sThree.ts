@@ -6,7 +6,7 @@ import type { Mesh, Object3D, PerspectiveCamera, WebGLRenderer } from 'three'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import type { TextGeometryParameters } from 'three/examples/jsm/geometries/TextGeometry.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
-import { addEventListener, animationFrameWrapper, dragEvent, isFn, isStr } from 'simon-js-tool'
+import { addEventListener, animationFrameWrapper, dragEvent, isFn, isStr, useMutationObserver } from 'simon-js-tool'
 import * as dat from 'dat.gui'
 
 type T = typeof THREE
@@ -172,10 +172,11 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
   let isMounted = false
   let hasMounted = false
   let gui: dat.GUI
-  const scene: Scene = new THREE.Scene()
+  let scene: Scene | null = new THREE.Scene()
   const renderer = new THREE.WebGLRenderer()
-  const dom = renderer.domElement
-  const fnNameMap: FnNameMap = {
+  let dom: HTMLCanvasElement | null = renderer.domElement
+  let stop: () => void
+  let fnNameMap: FnNameMap | null = {
     v3: 'Vector3',
     v2: 'Vector2',
     v4: 'Vector4',
@@ -324,6 +325,20 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
   update()
   addEventListener(document, 'DOMContentLoaded', update)
 
+  function destoryStop() {
+    gui?.hide()
+    stop?.()
+    scene = null
+    renderer.dispose()
+    dom = null
+    loaderArray.length = 0
+    fnNameMap = null
+    cacheLoader.clear()
+    gltfLoaderMap.clear()
+    dracoLoaderMap.clear()
+    animationArray.length = 0
+  }
+
   return {
     c,
     cf,
@@ -350,17 +365,21 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
       throw new Error(`${container} container is not found`)
 
     const { createCamera, createMesh, animate, mousemove, mousedown, mouseup, debug, alias, shadowType } = options
-    if (debug && !gui)
+    if (debug && !gui) {
       gui = new dat.GUI()
+      gui.closed = true
+    }
+    else { gui?.hide() }
+
     if (alias) {
-      Object.assign(fnNameMap, alias)
+      Object.assign(fnNameMap!, alias)
       Object.keys(alias).forEach((key) => {
         if (!alias[key].includes('Loader') || loaderArray.includes(key))
           return
         loaderArray.push(key)
       })
     }
-    scene._add = function (...args: any[]) {
+    scene!._add = function (...args: any[]) {
       scene.add(...args)
       const result = args.map(arg => () => unmount(arg))
       return result.length === 1 ? result[0] : result
@@ -385,27 +404,33 @@ export function sThree(container: HTMLElement | string, options: SThreeOptions):
     }
     if (animate) {
       const clock = new THREE.Clock()
-      animationFrameWrapper((time: number) => renderer.render(scene, animate(Object.assign(animationOptions, { elapsedTime: clock.getElapsedTime(), timestamp: time })) || camera), 0)
+      stop = animationFrameWrapper((time: number) => renderer.render(scene!, animate(Object.assign(animationOptions, { elapsedTime: clock.getElapsedTime(), timestamp: time })) || camera), 0)
     }
-    else { animationFrameWrapper(() => renderer.render(scene, camera), 0, true) }
+    else { animationFrameWrapper(() => renderer.render(scene!, camera), 0, true) }
 
-    (container as HTMLElement).appendChild(dom)
+    (container as HTMLElement).appendChild(dom!)
     hasMounted = true
-    dragEvent(dom, {
+    dragEvent(dom!, {
       dragStart: mousedown,
       dragMove: mousemove,
       dragEnd: mouseup,
     })
     resize()
     addEventListener(window, 'resize', resize)
-
+    useMutationObserver((container as HTMLElement)?.parentNode, (mutations: MutationRecord[]) => {
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node === container)
+            destoryStop()
+        })
+      })
+    }, { childList: true })
     function resize() {
       const width = (container as HTMLElement).offsetWidth
       const height = (container as HTMLElement).offsetHeight
       camera.aspect = Math.min(width / height, 2)
       camera.updateProjectionMatrix()
       renderer.setSize(width, height, false)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     }
   }
   function c(fnName: keyof FnNameMap | keyof T, ...args: any[]): any {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import { sThree } from "simon-js-tool";
+import { getDevice } from 'simon-js-tool'
 import * as CANNON from 'cannon-es'
 import { sThree } from '../../../src/sThree'
 import vertexShader from './vertex2.glsl'
@@ -23,7 +23,7 @@ const {
   scene,
   dom,
   setRendererAttributes,
-} = sThree('#demo', {
+} = sThree('#wave', {
   createMesh() {
     // Update all materials
     const waterGeometry = c('pg', 10, 10, 512, 512)
@@ -113,7 +113,12 @@ const {
   },
   createCamera() {
     const camera = c('PC')
-    camera.position.set(-3, 3, 0)
+    const { os } = getDevice()
+    if (os === 'ios' || os === 'android')
+      camera.position.set(0, 10, 0)
+    else
+      camera.position.set(-1, 10, 10)
+
     return camera
   },
   middleware({ camera, OrbitControls }) {
@@ -145,5 +150,5 @@ function updateAllMaterials() {
 </script>
 
 <template>
-  <div id="demo" h-full />
+  <div id="wave" h-full />
 </template>

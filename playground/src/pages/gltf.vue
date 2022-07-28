@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// import { sThree } from "simon-js-tool";
+import { sThree } from '@simon_he/s-three'
 import * as CANNON from 'cannon-es'
-import { sThree } from '../../../src/sThree'
+// import { sThree } from "../../../src/sThree";
 // import * as sThree from "../../src/sThree.ts";
 
 let oldElapsedTime = 0
@@ -39,7 +39,7 @@ const {
     // const dracoLoader = draCOLoader("/public/Duck/glTF-Draco/");
     // gltfLoader
     // console.log(dracoLoader);
-    glTFLoader('/public/Fox/glTF/Fox.gltf').then((gltf) => {
+    glTFLoader('/Fox/glTF/Fox.json').then((gltf) => {
       mixer = c('am', gltf.scene)
       mixer.clipAction(gltf.animations[0]).play()
       mixer.clipAction(gltf.animations[2]).play()
@@ -65,7 +65,6 @@ const {
     mixer?.update(delta)
   },
   shadowType: 'PCFSoftShadowMap',
-  debug: true,
 })
 
 function createLight() {
@@ -84,5 +83,5 @@ function createLight() {
 </script>
 
 <template>
-  <div id="gltf" h-full />
+  <div id="gltf" w-full />
 </template>
