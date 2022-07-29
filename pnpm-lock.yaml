@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@antfu/eslint-config': ^0.25.0
-      '@simon_he/s-three': ^0.0.4
+      '@simon_he/s-three': ^0.0.5
       '@types/dat.gui': ^0.7.7
       '@types/node': ^17.0.38
       '@types/three': ^0.141.0
@@ -17,7 +17,7 @@ importers:
       eslint: ^8.16.0
       eslint-plugin-n: ^15.2.1
       pkgroll: ^1.3.1
-      simon-js-tool: ^4.0.10
+      simon-js-tool: ^4.0.12
       three: ^0.142.0
       typescript: ^4.7.2
       vite: ^3.0.0
@@ -29,7 +29,7 @@ importers:
       vue: 3.2.36
     devDependencies:
       '@antfu/eslint-config': 0.25.0_eslint@8.16.0+typescript@4.7.2
-      '@simon_he/s-three': 0.0.4
+      '@simon_he/s-three': 0.0.5
       '@types/dat.gui': 0.7.7
       '@types/node': 17.0.38
       '@types/three': 0.141.0
@@ -40,7 +40,7 @@ importers:
       eslint: 8.16.0
       eslint-plugin-n: 15.2.1_eslint@8.16.0
       pkgroll: 1.3.1_typescript@4.7.2
-      simon-js-tool: 4.0.10
+      simon-js-tool: 4.0.12
       three: 0.142.0
       typescript: 4.7.2
       vite: 3.0.0
@@ -490,10 +490,13 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@simon_he/s-three/0.0.4:
-    resolution: {integrity: sha512-YJf3+HSiQLo+0+cSrRsS/5e+q9zCn3xr5poBt8xhEVuQzr7vcKYd2CsHV4wRtVAu6XnFei/Sz2v11+HTERYd0g==}
+  /@simon_he/s-three/0.0.5:
+    resolution: {integrity: sha512-O4zigX+3707gkLw1K4WNom9qvKyB3BAXFVZ20kP/GHTDuBUU/ni7ovpH1VAB5ms1HbmQ7vJb5V/290u8/Li1vQ==}
     dependencies:
       '@vueuse/core': 8.6.0_vue@3.2.36
+      dat.gui: 0.7.9
+      simon-js-tool: 4.0.12
+      three: 0.142.0
       vue: 3.2.36
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -1531,6 +1534,14 @@ packages:
       entities: 2.2.0
     dev: true
 
+  /dom-serializer/2.0.0:
+    resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
+    dependencies:
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
+      entities: 4.3.1
+    dev: true
+
   /domelementtype/2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
     dev: true
@@ -1549,12 +1560,27 @@ packages:
       domelementtype: 2.3.0
     dev: true
 
+  /domhandler/5.0.3:
+    resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
+    engines: {node: '>= 4'}
+    dependencies:
+      domelementtype: 2.3.0
+    dev: true
+
   /domutils/2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
     dependencies:
       dom-serializer: 1.4.1
       domelementtype: 2.3.0
       domhandler: 4.3.1
+    dev: true
+
+  /domutils/3.0.1:
+    resolution: {integrity: sha512-z08c1l761iKhDFtfXO04C7kTdPBLi41zwOZl00WS8b5eiaebNpY00HKbztwBq+e3vyqWNwWF3mP9YLUeqIrF+Q==}
+    dependencies:
+      dom-serializer: 2.0.0
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
     dev: true
 
   /duplexer/0.1.2:
@@ -1567,6 +1593,11 @@ packages:
 
   /entities/3.0.1:
     resolution: {integrity: sha512-WiyBqoomrwMdFG1e0kqvASYfnlb0lp8M5o5Fw2OFq1hNZxxcNk8Ik0Xm7LxzBhuidnZB/UtBqVCgUz3kBOP51Q==}
+    engines: {node: '>=0.12'}
+    dev: true
+
+  /entities/4.3.1:
+    resolution: {integrity: sha512-o4q/dYJlmyjP2zfnaWDUC6A3BQFmVTX+tZPezK7k0GLSU9QYCauscf5Y+qcEPzKL+EixVouYDgLQK5H9GrLpkg==}
     engines: {node: '>=0.12'}
     dev: true
 
@@ -2782,6 +2813,15 @@ packages:
       entities: 3.0.1
     dev: true
 
+  /htmlparser2/8.0.1:
+    resolution: {integrity: sha512-4lVbmc1diZC7GUJQtRQ5yBAeUCL1exyMwmForWkRLnwyzWBFxN633SALPMGYaWZvKe9j1pRZJpauvmxENSp/EA==}
+    dependencies:
+      domelementtype: 2.3.0
+      domhandler: 5.0.3
+      domutils: 3.0.1
+      entities: 4.3.1
+    dev: true
+
   /http-proxy-agent/5.0.0:
     resolution: {integrity: sha512-n2hY8YdoRE1i7r6M0w9DIw5GgZN0G25P8zLCRQ8rjXtTU3vsNFBI/vWK/UIeE6g5MUUz6avwAPXmL6Fy9D/90w==}
     engines: {node: '>= 6'}
@@ -3916,10 +3956,12 @@ packages:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
     dev: true
 
-  /simon-js-tool/4.0.10:
-    resolution: {integrity: sha512-Az8ZPBHG0w8o8d4TPapAvObOksMZqO/8+u/I0HdcJL5b1zDEPWsPUnUHt5qzWj0qW0ghmszrDlyi+QKCWum0Aw==}
+  /simon-js-tool/4.0.12:
+    resolution: {integrity: sha512-G+7IKq5i+dj6jxvezmU69dEl5HL0rpYTXsQmQURDgF311cO4D0y9Vp36hghK4wHy4IkId6bIe/IoJIax1hakIQ==}
     dependencies:
       '@vueuse/core': 8.6.0_vue@3.2.36
+      htmlparser2: 8.0.1
+      spark-md5: 3.0.2
       vue: 3.2.36
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -3953,6 +3995,10 @@ packages:
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+
+  /spark-md5/3.0.2:
+    resolution: {integrity: sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==}
+    dev: true
 
   /spdx-correct/3.1.1:
     resolution: {integrity: sha512-cOYcUWwhCuHCXi49RhFRCyJEK3iPj1Ziz9DpViV3tbZOwXD49QzIN3MpOLJNxh2qwq2lJJZaKMVw9qNi4jTC0w==}
